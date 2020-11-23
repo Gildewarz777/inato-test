@@ -1,15 +1,26 @@
+import { config } from "./drugs.config.json";
+
 export class Drug {
   constructor(name, expiresIn, benefit) {
     this.name = name;
     this.expiresIn = expiresIn;
     this.benefit = benefit;
   }
+
+  getConfig() {
+    return config[this.name] || config.defaultValues;
+  }
+
+  setConfig() {}
 }
 
 export class Pharmacy {
   constructor(drugs = []) {
     this.drugs = drugs;
   }
+
+  getCurrentCoef() {}
+
   updateBenefitValue() {
     for (var i = 0; i < this.drugs.length; i++) {
       if (

@@ -8,7 +8,7 @@ export class Drug {
   }
 
   getConfig() {
-    const config = JSON.parse(fs.readFile("./drugs.config.json"));
+    const config = JSON.parse(fs.readFileSync("./drugs.config.json"));
     if (!config[this.name]) {
       this.setConfig();
     }

@@ -1,4 +1,4 @@
-import { config } from "./drugs.config.json";
+import fs from "fs";
 
 export class Drug {
   constructor(name, expiresIn, benefit) {
@@ -8,18 +8,39 @@ export class Drug {
   }
 
   getConfig() {
-    return config[this.name] || config.defaultValues;
+    const config = JSON.parse(fs.readFile("./drugs.config.json"));
+    if (!config[this.name]) {
+      this.setConfig();
+    }
+    return config[this.name];
   }
 
-  setConfig() {}
+  setConfig(
+    initialValue = -1,
+    steps = [
+      {
+        coef: -2,
+        expiresIn: 0
+      }
+    ]
+  ) {
+    fs.readFile("./drugs.config.json", function(err, data) {
+      const json = JSON.parse(data);
+      json[this.name] = {
+        initialValue,
+        steps
+      };
+      fs.writeFile("./drugs.config.json", JSON.stringify(json));
+    });
+  }
+
+  getCurrentCoef() {}
 }
 
 export class Pharmacy {
   constructor(drugs = []) {
     this.drugs = drugs;
   }
-
-  getCurrentCoef() {}
 
   updateBenefitValue() {
     for (var i = 0; i < this.drugs.length; i++) {

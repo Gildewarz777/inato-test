@@ -24,7 +24,7 @@ export class Drug {
     const config = await JSON.parse(fs.readFileSync("./drugs.config.json"));
 
     if (!config[this.name]) {
-      this.setConfig();
+      await this.setConfig(this.name);
       return config["defaultValues"];
     }
 
@@ -32,6 +32,7 @@ export class Drug {
   }
 
   setConfig(
+    name,
     benefit = {
       initialIncrement: -1,
       steps: [
@@ -47,11 +48,20 @@ export class Drug {
   ) {
     return fs.readFile("./drugs.config.json", function(err, data) {
       const json = JSON.parse(data);
-      json[this.name] = {
+
+      json[name] = {
         benefit,
         expiresIn
       };
-      fs.writeFile("./drugs.config.json", JSON.stringify(json));
+      /* eslint-disable no-console */
+      fs.writeFile("./drugs.config.json", JSON.stringify(json), err => {
+        if (err) {
+          console.log(err);
+        } else {
+          return;
+        }
+      });
+      /* eslint-enable no-console */
     });
   }
 

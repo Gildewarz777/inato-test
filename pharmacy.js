@@ -69,7 +69,7 @@ export class Pharmacy {
       const newBenefit =
         this.drugs[i].benefit + (await this.drugs[i].getCurrentIncrement());
 
-      if (newBenefit <= 50 || newBenefit >= 0) {
+      if (newBenefit <= 50 && newBenefit >= 0) {
         this.drugs[i].benefit = newBenefit;
       }
 

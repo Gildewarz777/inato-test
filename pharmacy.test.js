@@ -24,4 +24,16 @@ describe("Pharmacy", () => {
       await new Pharmacy([new Drug("Herbal Tea", 1, 0)]).updateBenefitValue()
     ).toEqual([new Drug("Herbal Tea", 0, 1)]);
   });
+
+  it("Herbal tea benefits increases twice as fast after the expiration", async () => {
+    expect(
+      await new Pharmacy([new Drug("Herbal Tea", 0, 0)]).updateBenefitValue()
+    ).toEqual([new Drug("Herbal Tea", -1, 2)]);
+  });
+
+  it("Benefit is never more than 50", async () => {
+    expect(
+      await new Pharmacy([new Drug("Herbal Tea", 0, 49)]).updateBenefitValue()
+    ).toEqual([new Drug("Herbal Tea", -1, 50)]);
+  });
 });

@@ -51,7 +51,7 @@ export class Drug {
     config.steps.reverse();
 
     for (let i = 0; i < config.steps.length; i++) {
-      if (config.steps[i].expiresIn > this.expiresIn) {
+      if (config.steps[i].expiresIn >= this.expiresIn) {
         return config.steps[i].increment;
       }
     }
@@ -67,12 +67,18 @@ export class Pharmacy {
 
   async updateBenefitValue() {
     for (let i = 0; i < this.drugs.length; i++) {
-      const newBenefit =
+      let newBenefit =
         this.drugs[i].benefit + (await this.drugs[i].getCurrentIncrement());
 
-      if (newBenefit <= 50 && newBenefit >= 0) {
-        this.drugs[i].benefit = newBenefit;
+      if (newBenefit > 50) {
+        newBenefit = 50;
       }
+
+      if (newBenefit < 0) {
+        newBenefit = 0;
+      }
+
+      this.drugs[i].benefit = newBenefit;
 
       this.drugs[i].expiresIn -= 1;
     }

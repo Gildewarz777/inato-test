@@ -13,9 +13,10 @@ export class Drug {
 
     if (!config[this.name]) {
       await this.setConfig();
+      return config["defaultValues"];
     }
 
-    return config["defaultValues"];
+    return config[this.name];
   }
 
   setConfig(

@@ -18,4 +18,10 @@ describe("Pharmacy", () => {
       await new Pharmacy([new Drug("test3", 0, 0)]).updateBenefitValue()
     ).toEqual([new Drug("test3", -1, 0)]);
   });
+
+  it("Herbal tea increases in benefit", async () => {
+    expect(
+      await new Pharmacy([new Drug("Herbal Tea", 1, 0)]).updateBenefitValue()
+    ).toEqual([new Drug("Herbal Tea", 0, 1)]);
+  });
 });

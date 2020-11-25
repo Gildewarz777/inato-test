@@ -1,6 +1,18 @@
 import fs from "fs";
 import _ from "lodash";
 
+const checkBenefitRange = benefit => {
+  if (benefit > 50) {
+    benefit = 50;
+  }
+
+  if (benefit < 0) {
+    benefit = 0;
+  }
+
+  return benefit;
+};
+
 export class Drug {
   constructor(name, expiresIn, benefit) {
     this.name = name;
@@ -12,7 +24,7 @@ export class Drug {
     const config = await JSON.parse(fs.readFileSync("./drugs.config.json"));
 
     if (!config[this.name]) {
-      await this.setConfig();
+      this.setConfig();
       return config["defaultValues"];
     }
 
@@ -43,13 +55,14 @@ export class Drug {
     });
   }
 
-  async getCurrentIncrement() {
+  async getNewBenefit() {
     const benefitConfig = (await this.getConfig()).benefit;
 
     let benefitIncrement = benefitConfig.initialIncrement;
+    let newBenefit = this.benefit + benefitIncrement;
 
     if (!benefitConfig.steps) {
-      return benefitIncrement;
+      return checkBenefitRange(newBenefit);
     }
 
     _.sortBy(benefitConfig.steps, "expiresIn");
@@ -57,15 +70,17 @@ export class Drug {
 
     for (let i = 0; i < benefitConfig.steps.length; i++) {
       if (benefitConfig.steps[i].expiresIn >= this.expiresIn) {
-        return benefitConfig.steps[i].increment;
+        return benefitConfig.steps[i].forceValue != undefined
+          ? checkBenefitRange(benefitConfig.steps[i].forceValue)
+          : checkBenefitRange(this.benefit + benefitConfig.steps[i].increment);
       }
     }
 
-    return benefitIncrement;
+    return checkBenefitRange(newBenefit);
   }
 
-  async getExpiresInIncrement() {
-    return (await this.getConfig()).expiresIn.increment;
+  async getNewExpiresIn() {
+    return this.expiresIn + (await this.getConfig()).expiresIn.increment;
   }
 }
 
@@ -76,20 +91,8 @@ export class Pharmacy {
 
   async updateBenefitValue() {
     for (let i = 0; i < this.drugs.length; i++) {
-      let newBenefit =
-        this.drugs[i].benefit + (await this.drugs[i].getCurrentIncrement());
-
-      if (newBenefit > 50) {
-        newBenefit = 50;
-      }
-
-      if (newBenefit < 0) {
-        newBenefit = 0;
-      }
-
-      this.drugs[i].benefit = newBenefit;
-
-      this.drugs[i].expiresIn += await this.drugs[i].getExpiresInIncrement();
+      this.drugs[i].benefit = await this.drugs[i].getNewBenefit();
+      this.drugs[i].expiresIn = await this.drugs[i].getNewExpiresIn();
     }
 
     return this.drugs;

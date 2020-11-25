@@ -42,4 +42,52 @@ describe("Pharmacy", () => {
       await new Pharmacy([new Drug("Magic Pill", 1, 1)]).updateBenefitValue()
     ).toEqual([new Drug("Magic Pill", 1, 1)]);
   });
+
+  it("Fervex increases in benefit", async () => {
+    expect(
+      await new Pharmacy([new Drug("Fervex", 20, 20)]).updateBenefitValue()
+    ).toEqual([new Drug("Fervex", 19, 21)]);
+  });
+
+  it("Fervex increases in benefit", async () => {
+    expect(
+      await new Pharmacy([new Drug("Fervex", 20, 20)]).updateBenefitValue()
+    ).toEqual([new Drug("Fervex", 19, 21)]);
+  });
+
+  it("Fervex benefit increases by 2 when there are 10 days or less", async () => {
+    expect(
+      await new Pharmacy([new Drug("Fervex", 10, 20)]).updateBenefitValue()
+    ).toEqual([new Drug("Fervex", 9, 22)]);
+  });
+
+  it("Fervex benefit increases by 3 when there are 5 days or less", async () => {
+    expect(
+      await new Pharmacy([new Drug("Fervex", 5, 20)]).updateBenefitValue()
+    ).toEqual([new Drug("Fervex", 4, 23)]);
+  });
+
+  it("Fervex benefit drops to 0 after the expiration date", async () => {
+    expect(
+      await new Pharmacy([new Drug("Fervex", 0, 20)]).updateBenefitValue()
+    ).toEqual([new Drug("Fervex", -1, 0)]);
+  });
+
+  it("Fervex benefit stays at 0 after the expiration date", async () => {
+    expect(
+      await new Pharmacy([new Drug("Fervex", -5, 0)]).updateBenefitValue()
+    ).toEqual([new Drug("Fervex", -6, 0)]);
+  });
+
+  it("Dafalgan degrades in benefit twice as fast before expiration", async () => {
+    expect(
+      await new Pharmacy([new Drug("Dafalgan", 10, 10)]).updateBenefitValue()
+    ).toEqual([new Drug("Dafalgan", 9, 8)]);
+  });
+
+  it("Dafalgan degrades in benefit twice as fast after expiration", async () => {
+    expect(
+      await new Pharmacy([new Drug("Dafalgan", 0, 10)]).updateBenefitValue()
+    ).toEqual([new Drug("Dafalgan", -1, 6)]);
+  });
 });

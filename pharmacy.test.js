@@ -36,4 +36,10 @@ describe("Pharmacy", () => {
       await new Pharmacy([new Drug("Herbal Tea", 0, 49)]).updateBenefitValue()
     ).toEqual([new Drug("Herbal Tea", -1, 50)]);
   });
+
+  it("Magic Pill never expires nor decreases in Benefit", async () => {
+    expect(
+      await new Pharmacy([new Drug("Magic Pill", 1, 1)]).updateBenefitValue()
+    ).toEqual([new Drug("Magic Pill", 1, 1)]);
+  });
 });

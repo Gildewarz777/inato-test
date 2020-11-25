@@ -20,43 +20,52 @@ export class Drug {
   }
 
   setConfig(
-    initialIncrement = -1,
-    steps = [
-      {
-        increment: -2,
-        expiresIn: 0
-      }
-    ]
+    benefit = {
+      initialIncrement: -1,
+      steps: [
+        {
+          increment: -2,
+          expiresIn: 0
+        }
+      ]
+    },
+    expiresIn = {
+      increment: -1
+    }
   ) {
     return fs.readFile("./drugs.config.json", function(err, data) {
       const json = JSON.parse(data);
       json[this.name] = {
-        initialIncrement,
-        steps
+        benefit,
+        expiresIn
       };
       fs.writeFile("./drugs.config.json", JSON.stringify(json));
     });
   }
 
   async getCurrentIncrement() {
-    const config = await this.getConfig();
+    const benefitConfig = (await this.getConfig()).benefit;
 
-    let increment = config.initialIncrement;
+    let benefitIncrement = benefitConfig.initialIncrement;
 
-    if (!config.steps) {
-      return increment;
+    if (!benefitConfig.steps) {
+      return benefitIncrement;
     }
 
-    _.sortBy(config.steps, "expiresIn");
-    config.steps.reverse();
+    _.sortBy(benefitConfig.steps, "expiresIn");
+    benefitConfig.steps.reverse();
 
-    for (let i = 0; i < config.steps.length; i++) {
-      if (config.steps[i].expiresIn >= this.expiresIn) {
-        return config.steps[i].increment;
+    for (let i = 0; i < benefitConfig.steps.length; i++) {
+      if (benefitConfig.steps[i].expiresIn >= this.expiresIn) {
+        return benefitConfig.steps[i].increment;
       }
     }
 
-    return increment;
+    return benefitIncrement;
+  }
+
+  async getExpiresInIncrement() {
+    return (await this.getConfig()).expiresIn.increment;
   }
 }
 
@@ -80,7 +89,7 @@ export class Pharmacy {
 
       this.drugs[i].benefit = newBenefit;
 
-      this.drugs[i].expiresIn -= 1;
+      this.drugs[i].expiresIn += await this.drugs[i].getExpiresInIncrement();
     }
 
     return this.drugs;

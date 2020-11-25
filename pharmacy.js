@@ -8,14 +8,14 @@ export class Drug {
     this.benefit = benefit;
   }
 
-  getConfig() {
-    const config = JSON.parse(fs.readFileSync("./drugs.config.json"));
+  async getConfig() {
+    const config = await JSON.parse(fs.readFileSync("./drugs.config.json"));
 
     if (!config[this.name]) {
-      this.setConfig();
+      await this.setConfig();
     }
 
-    return config[this.name];
+    return config["defaultValues"];
   }
 
   setConfig(
@@ -27,7 +27,7 @@ export class Drug {
       }
     ]
   ) {
-    fs.readFile("./drugs.config.json", function(err, data) {
+    return fs.readFile("./drugs.config.json", function(err, data) {
       const json = JSON.parse(data);
       json[this.name] = {
         initialIncrement,
@@ -37,19 +37,18 @@ export class Drug {
     });
   }
 
-  getCurrentIncrement() {
-    const config = this.getConfig();
+  async getCurrentIncrement() {
+    const config = await this.getConfig();
+
     let increment = config.initialIncrement;
 
     if (!config.steps) {
       return increment;
     }
 
-    // Sort the array in reverse by expiresIn
     _.sortBy(config.steps, "expiresIn");
     config.steps.reverse();
 
-    // Return the current increment
     for (let i = 0; i < config.steps.length; i++) {
       if (config.steps[i].expiresIn > this.expiresIn) {
         return config.steps[i].increment;
@@ -65,14 +64,16 @@ export class Pharmacy {
     this.drugs = drugs;
   }
 
-  updateBenefitValue() {
+  async updateBenefitValue() {
     for (let i = 0; i < this.drugs.length; i++) {
       const newBenefit =
-        this.drugs[i].benefit + this.drugs[i].getCurrentIncrement();
+        this.drugs[i].benefit + (await this.drugs[i].getCurrentIncrement());
 
       if (newBenefit <= 50 || newBenefit >= 0) {
         this.drugs[i].benefit = newBenefit;
       }
+
+      this.drugs[i].expiresIn -= 1;
 
       // Add conditions:
       // Benefit not negative of
